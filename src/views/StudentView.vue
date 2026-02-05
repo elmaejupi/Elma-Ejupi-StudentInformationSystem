@@ -3,9 +3,10 @@ import { ref, computed, onMounted } from 'vue'
 import StudentList from '../components/StudentList.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import StudentForm from '@/components/StudentForm.vue'
-import { saveStudents , saveDeletedStudents} from '../services/StudentServices'
+import { getStudents, saveStudents, getDeletedStudents, saveDeletedStudents } from '../services/StudentServices'
 
 const students = ref([])
+const deletedStudents = ref([])
 const search = ref('')
 const showForm = ref(false)
 const selectedStudent = ref(null)
@@ -13,43 +14,46 @@ const currentPage = ref(1)
 const itemsPerPage = 10
 const sortKey = ref('')
 const sortOrder = ref(1)
-const deletedStudents = ref([])
 
 onMounted(() => {
-  students.value = Array.from({ length: 25 }, (_, i) => ({
-    id: i + 1,
-    name: `Student ${i + 1}`,
-    dob: `200${i % 10}-01-01`,
-    municipality: ['NYC', 'LA', 'Chicago'][i % 3]
-  }))
+  students.value = getStudents()
+  deletedStudents.value = getDeletedStudents()
+
+  if (students.value.length === 0) {
+    students.value = Array.from({ length: 25 }, (_, i) => ({
+      id: i + 1,
+      name: `Student ${i + 1}`,
+      dob: `200${i % 10}-01-01`,
+      municipality: ['NYC', 'LA', 'Chicago'][i % 3]
+    }))
+    saveStudents(students.value)
+  }
 })
 
 const openAdd = () => { selectedStudent.value = null; showForm.value = true }
 const openEdit = (student) => { selectedStudent.value = { ...student }; showForm.value = true }
+
 const saveStudent = (student) => {
-  if (!student.id) student.id = students.value.length ? students.value[students.value.length-1].id+1 : 1, students.value.push(student)
-  else students.value[students.value.findIndex(s => s.id === student.id)] = student
+  if (!student.id) {
+    student.id = students.value.length ? students.value[students.value.length-1].id+1 : 1
+    students.value.push(student)
+  } else {
+    students.value[students.value.findIndex(s => s.id === student.id)] = student
+  }
   saveStudents(students.value)
   showForm.value = false
 }
-// const deleteStudent = (id) => { 
-//     students.value = students.value.filter(s => s.id !== id); saveStudents(students.value) 
-
-// }
-
 
 const deleteStudent = (id) => {
   const student = students.value.find(s => s.id === id)
+  if (!student) return
 
-  if (student) {
-    deletedStudents.value.push(student)
-    students.value = students.value.filter(s => s.id !== id)
+  deletedStudents.value.push(student)
+  students.value = students.value.filter(s => s.id !== id)
 
-    saveStudents(students.value)
-    saveDeletedStudents(deletedStudents.value)
-  }
+  saveStudents(students.value)
+  saveDeletedStudents(deletedStudents.value)
 }
-
 
 const filteredStudents = computed(() => {
   if (!search.value) return students.value
@@ -78,9 +82,7 @@ const paginatedStudents = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   return sortedStudents.value.slice(start, start + itemsPerPage)
 })
-
 const totalPages = computed(() => Math.ceil(filteredStudents.value.length / itemsPerPage))
-
 const goToPage = (page) => { if(page >=1 && page <= totalPages.value) currentPage.value = page }
 
 const sortBy = (key) => {
@@ -89,6 +91,7 @@ const sortBy = (key) => {
   currentPage.value = 1
 }
 </script>
+
 
 <template>
   <div class="students-title">

@@ -47,7 +47,6 @@
     </section>
 
     <section>
-      <h2>Need More Help?</h2>
       <p>
         If something is not working as expected, try refreshing the page or
         checking your browser’s local storage.
