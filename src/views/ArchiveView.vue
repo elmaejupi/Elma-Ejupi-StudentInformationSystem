@@ -3,22 +3,33 @@ import { ref, computed } from 'vue'
 import StudentList from '@/components/StudentList.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import { getDeletedStudents, saveDeletedStudents, saveStudents } from '@/services/StudentServices'
+import StudentForm from '@/components/StudentForm.vue'
 
 const deletedStudents = ref(getDeletedStudents())
+const selectedStudent = ref(null)
 const search = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 10
 const sortKey = ref('')
 const sortOrder = ref('asc')
 
+const showForm = ref(false)              
+// const showRestoreConfirm = ref(false)     
+// const studentToRestore = ref(null)        
+
+// const viewStudent = (student) => {
+//   alert(`
+// ID: ${student.id}
+// Name: ${student.name}
+// DOB: ${student.dob}
+// Municipality: ${student.municipality}
+// `)
+// }
 const viewStudent = (student) => {
-  alert(`
-ID: ${student.id}
-Name: ${student.name}
-DOB: ${student.dob}
-Municipality: ${student.municipality}
-`)
+  selectedStudent.value = { ...student }
+  showForm.value = true
 }
+
 
 const restoreStudent = (id) => {
   const student = deletedStudents.value.find(s => s.id === id)
@@ -112,6 +123,29 @@ const goToPage = (page) => {
     </button>
     <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
   </div>
+
+  <!-- popup for view -->
+<div v-if="showForm" class="overlay">
+  <div class="popup">
+    <h2>Student Details</h2>
+    <p><strong>ID:</strong> {{ selectedStudent.id }}</p>
+    <p><strong>Name:</strong> {{ selectedStudent.name }}</p>
+    <p><strong>DOB:</strong> {{ selectedStudent.dob }}</p>
+    <p><strong>Municipality:</strong> {{ selectedStudent.municipality }}</p>
+    <button @click="showForm = false">Close</button>
+  </div>
+</div>
+
+<!-- popup for restore -->
+<!-- <div v-if="showRestoreConfirm" class="overlay">
+  <div class="popup">
+    <h2>Confirm Restore</h2>
+    <p>Are you sure you want to restore <strong>{{ studentToRestore.name }}</strong>?</p>
+    <button @click="restoreStudentConfirmed">Yes</button>
+    <button @click="showRestoreConfirm = false">No</button>
+  </div>
+</div> -->
+
 </template>
 
 <style scoped>
@@ -141,4 +175,46 @@ const goToPage = (page) => {
 .pagination button.active {
   background-color: #3399ff;
 }
+
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+}
+
+.popup button {
+  margin: 10px 5px 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.popup button:first-of-type {
+  background-color: #3399ff;
+  color: white;
+}
+
+.popup button:last-of-type {
+  background-color: #ccc;
+}
+ .popup button:last-of-type:hover{
+    background-color: #3399ff;
+ }
+
 </style>
