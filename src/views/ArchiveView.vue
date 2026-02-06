@@ -13,18 +13,10 @@ const itemsPerPage = 10
 const sortKey = ref('')
 const sortOrder = ref('asc')
 
-const showForm = ref(false)              
-// const showRestoreConfirm = ref(false)     
-// const studentToRestore = ref(null)        
+const showForm = ref(false)  
+const showRestoreConfirm = ref(false)
+const studentToRestore = ref(null)            
 
-// const viewStudent = (student) => {
-//   alert(`
-// ID: ${student.id}
-// Name: ${student.name}
-// DOB: ${student.dob}
-// Municipality: ${student.municipality}
-// `)
-// }
 const viewStudent = (student) => {
   selectedStudent.value = { ...student }
   showForm.value = true
@@ -42,6 +34,26 @@ const restoreStudent = (id) => {
 
   saveStudents(students)
   saveDeletedStudents(deletedStudents.value)
+}
+
+const confirmRestore = (student) => {
+  studentToRestore.value = student
+  showRestoreConfirm.value = true
+}
+
+const restoreStudentConfirmed = () => {
+  if (!studentToRestore.value) return
+
+  const studentsList = JSON.parse(localStorage.getItem('students')) || []
+  studentsList.push(studentToRestore.value)
+
+  deletedStudents.value = deletedStudents.value.filter(s => s.id !== studentToRestore.value.id)
+
+  saveStudents(studentsList)
+  saveDeletedStudents(deletedStudents.value)
+
+  showRestoreConfirm.value = false
+  studentToRestore.value = null
 }
 
 const sortBy = (key) => {
@@ -105,7 +117,7 @@ const goToPage = (page) => {
     :students="paginatedStudents"
     mode="archive"
     @view="viewStudent"
-    @restore="restoreStudent"
+    @restore="confirmRestore"
     @sort="sortBy"
     :sortKey="sortKey"
     :sortOrder="sortOrder"
@@ -136,15 +148,15 @@ const goToPage = (page) => {
   </div>
 </div>
 
-<!-- popup for restore -->
-<!-- <div v-if="showRestoreConfirm" class="overlay">
+<div v-if="showRestoreConfirm" class="overlay">
   <div class="popup">
     <h2>Confirm Restore</h2>
     <p>Are you sure you want to restore <strong>{{ studentToRestore.name }}</strong>?</p>
     <button @click="restoreStudentConfirmed">Yes</button>
     <button @click="showRestoreConfirm = false">No</button>
   </div>
-</div> -->
+</div>
+
 
 </template>
 

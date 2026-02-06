@@ -9,6 +9,8 @@ const students = ref([])
 const deletedStudents = ref([])
 const search = ref('')
 const showForm = ref(false)
+const showDeleteConfirm = ref(false)
+const studentToDelete = ref(null)
 const selectedStudent = ref(null)
 const currentPage = ref(1)
 const itemsPerPage = 10
@@ -53,6 +55,26 @@ const deleteStudent = (id) => {
 
   saveStudents(students.value)
   saveDeletedStudents(deletedStudents.value)
+}
+
+const confirmDelete = (student) => {
+  console.log('Student to delete:', student)
+  studentToDelete.value = student 
+  showDeleteConfirm.value = true  
+}
+
+
+const deleteStudentConfirmed = () => {
+  if (!studentToDelete.value) return
+
+  deletedStudents.value.push(studentToDelete.value)
+  students.value = students.value.filter(s => s.id !== studentToDelete.value.id)
+
+  saveStudents(students.value)
+  saveDeletedStudents(deletedStudents.value)
+
+  showDeleteConfirm.value = false
+  studentToDelete.value = null
 }
 
 const filteredStudents = computed(() => {
@@ -108,7 +130,7 @@ const sortBy = (key) => {
   :students="paginatedStudents"
   mode="active"
   @edit="openEdit"
-  @delete="deleteStudent"
+  @delete="confirmDelete"
   @sort="sortBy"
   :sortKey="sortKey"
   :sortOrder="sortOrder"
@@ -123,6 +145,14 @@ const sortBy = (key) => {
 
   <StudentForm v-if="showForm" :student="selectedStudent" @save="saveStudent" @close="showForm=false"/>
   
+  <div v-if="showDeleteConfirm" class="overlay">
+  <div class="popup">
+    <h2>Confirm Delete</h2>
+    <p>Are you sure you want to delete <strong>{{ studentToDelete.name }}</strong>?</p>
+    <button @click="deleteStudentConfirmed">Yes</button>
+    <button @click="showDeleteConfirm = false">No</button>
+  </div>
+</div>
 </template>
 
 
@@ -174,4 +204,48 @@ const sortBy = (key) => {
     flex-direction: column;
     align-items: center;
 }
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.popup button {
+  margin: 10px 5px 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.popup button:first-of-type {
+  background-color: #3399ff;
+  color: white;
+}
+
+.popup button:last-of-type {
+  background-color: #ccc;
+}
+
+.popup button:last-of-type:hover {
+  background-color: #3399ff;
+  color: white;
+}
+
 </style>

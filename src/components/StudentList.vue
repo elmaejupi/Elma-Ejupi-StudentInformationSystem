@@ -72,12 +72,12 @@ const sortBy = (key) => {
         
         <template v-if="mode === 'active'">
             <button @click="$emit('edit', s)">Edit</button>
-            <button @click="$emit('delete', s.id)">Delete</button>
+            <button @click="$emit('delete', s)">Delete</button>
         </template>
 
         <template v-else>
             <button @click="$emit('view', s)">View</button>
-            <button @click="$emit('restore', s.id)">Restore</button>
+            <button @click="$emit('restore', s)">Restore</button>
         </template>
             </tr>
     </tbody>
