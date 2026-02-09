@@ -70,26 +70,32 @@ const filteredStudents = computed(() => {
 
   if (search.value) {
     const term = search.value.toLowerCase()
-    list = list.filter(s =>
-      s.name.toLowerCase().includes(term) ||
-      s.id.toString().includes(term) ||
-      s.dob.toLowerCase().includes(term) ||
-      s.municipality.toLowerCase().includes(term)
-    )
+    list = list.filter(s => {
+      return (
+        s.name?.toLowerCase().includes(term) ||
+        s.id?.toString().includes(term) ||
+        s.dob?.toLowerCase().includes(term) ||
+        s.municipality?.toLowerCase().includes(term)
+      )
+    })
   }
 
   if (sortKey.value) {
     list.sort((a, b) => {
-      const result =
-        a[sortKey.value] > b[sortKey.value] ? 1 :
-        a[sortKey.value] < b[sortKey.value] ? -1 : 0
+      let valA = a[sortKey.value]
+      let valB = b[sortKey.value]
 
+      if (typeof valA === 'string') valA = valA.toLowerCase()
+      if (typeof valB === 'string') valB = valB.toLowerCase()
+
+      const result = valA > valB ? 1 : valA < valB ? -1 : 0
       return sortOrder.value === 'asc' ? result : -result
     })
   }
 
   return list
 })
+
 
 const totalPages = computed(() => Math.ceil(filteredStudents.value.length / itemsPerPage))
 
